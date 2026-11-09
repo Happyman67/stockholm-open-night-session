@@ -10,8 +10,8 @@ export const news: NewsItem[] = [
       en: "Five things to watch: Fritz, Ruud and Musetti",
     },
     summary: {
-      sv: "ATP-text på arrangörens nyhetssida. Den behandlar Fritz, Ruud och Musetti som de tre högsta seedade under inomhusveckan. Hela genomgången ligger kvar hos arrangören. Den kopieras inte hit.",
-      en: "ATP copy on the organizer’s news page. It treats Fritz, Ruud and Musetti as the top three seeds for the indoor week. The full briefing stays on the organizer’s site and is not copied here.",
+      sv: "Fritz, Ruud och Musetti är de tre högsta seedade under inomhusveckan i Kungl. Tennishallen.",
+      en: "Fritz, Ruud and Musetti are the top three seeds for the indoor week at the Royal Tennis Hall.",
     },
     url: links.scouting,
     source: { sv: "Stockholm Open / ATP, 9 november 2026", en: "Stockholm Open / ATP, 9 November 2026" },
@@ -24,8 +24,8 @@ export const news: NewsItem[] = [
       en: "Ymer out after a tight second set",
     },
     summary: {
-      sv: "Söndagsrapporten beskriver Cerúndolos 6–1, 7–6(4) mot Ymer, Tirantes 7–6, 6–3 mot Munar, två dubbelresultat och måndagens svenska matcher: Borg, Dahlin och Grevelius/Heinonen.",
-      en: "Sunday’s report describes Cerúndolo’s 6–1, 7–6(4) win over Ymer, Tirante’s 7–6, 6–3 win over Munar, two doubles results, and Monday’s Swedish matches: Borg, Dahlin and Grevelius/Heinonen.",
+      sv: "Cerúndolo vann med 6–1, 7–6(4) mot Ymer. Tirante vann med 7–6, 6–3 mot Munar. Två dubbelmatcher blev klara, och Borg, Dahlin och Grevelius/Heinonen stod på måndagens schema.",
+      en: "Cerúndolo beat Ymer 6–1, 7–6(4). Tirante beat Munar 7–6, 6–3. Two doubles matches were completed, and Borg, Dahlin and Grevelius/Heinonen were on Monday’s schedule.",
     },
     url: links.sunday,
     source: { sv: "Stockholm Open, 8 november 2026", en: "Stockholm Open, 8 November 2026" },
@@ -38,8 +38,8 @@ export const news: NewsItem[] = [
       en: "Musetti confirmed for the indoor week",
     },
     summary: {
-      sv: "Arrangören skrev att Lorenzo Musetti är klar för 7–14 november och beskrev OS-brons samt en högsta ranking på femma från januari 2026. Turneringen spelas i Kungl. Tennishallen.",
-      en: "The organizer wrote that Lorenzo Musetti was confirmed for 7–14 November, mentioning Olympic bronze and a career-high of world No. 5 from January 2026. The event is at the Royal Tennis Hall.",
+      sv: "Lorenzo Musetti är klar för 7–14 november. OS-brons och en högsta ranking på femma från januari 2026. Turneringen spelas i Kungl. Tennishallen.",
+      en: "Lorenzo Musetti is confirmed for 7–14 November. Olympic bronze and a career-high of world No. 5 from January 2026. The event is at the Royal Tennis Hall.",
     },
     url: links.musettiStory,
     source: { sv: "Stockholm Open, 6 november 2026", en: "Stockholm Open, 6 November 2026" },
@@ -52,8 +52,8 @@ export const news: NewsItem[] = [
       en: "Fritz returning to the Tennis Hall",
     },
     summary: {
-      sv: "Arrangören meddelade att Taylor Fritz återvänder 7–14 november. Han spelade senast i Stockholm 2021. Texten nämner också US Open-finalen 2024 och segern i Indian Wells 2022.",
-      en: "The organizer announced Taylor Fritz’s return for 7–14 November. He last played Stockholm in 2021. The piece also mentions the 2024 US Open final and the 2022 Indian Wells title.",
+      sv: "Taylor Fritz är tillbaka i Kungl. Tennishallen 7–14 november. Han spelade senast i Stockholm 2021, var US Open-finalist 2024 och vann Indian Wells 2022.",
+      en: "Taylor Fritz is back at the Royal Tennis Hall for 7–14 November. He last played Stockholm in 2021, was a 2024 US Open finalist and won Indian Wells in 2022.",
     },
     url: links.fritzStory,
     source: { sv: "Stockholm Open, 13 oktober 2026", en: "Stockholm Open, 13 October 2026" },

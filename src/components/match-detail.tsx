@@ -8,7 +8,6 @@ import {
   entryLabel,
   formatDate,
   formatScore,
-  getLinks,
   getMatch,
   getPlayer,
   roundLabel,
@@ -20,7 +19,6 @@ import {
 export function MatchDetail({ id }: { id: string }) {
   const { lang } = useI18n();
   const match = getMatch(id);
-  const links = getLinks();
   useDocumentTitle({
     sv: match ? sideLabel(match.sides[0]) : "Match",
     en: match ? sideLabel(match.sides[0]) : "Match",
@@ -31,13 +29,16 @@ export function MatchDetail({ id }: { id: string }) {
 
   return (
     <article className="mx-auto max-w-[900px] px-5 py-12">
-      <p className="kicker">{statusLabel(match.status, lang)} · {lang === "sv" ? "Ögonblicksbild" : "Snapshot"}</p>
+      <p className="kicker">
+        {statusLabel(match.status, lang)}
+        {match.date ? ` · ${formatDate(match.date, lang)}` : ""}
+      </p>
       <h1 className="mt-3 font-display text-5xl leading-none tracking-wide sm:text-6xl">
         {sideLabel(match.sides[0])}
         <span className="mt-2 block text-amber">{lang === "sv" ? "mot" : "vs"} {sideLabel(match.sides[1])}</span>
       </h1>
       <p className="mt-6 text-lg">
-        {match.score ? formatScore(match.score) : lang === "sv" ? "Inget resultat i ögonblicksbilden." : "No result in the snapshot."}
+        {match.score ? formatScore(match.score) : lang === "sv" ? "Inget resultat." : "No result."}
       </p>
       <dl className="mt-8 grid gap-4 sm:grid-cols-2">
         <Fact label={lang === "sv" ? "Datum" : "Date"} value={formatDate(match.date, lang)} />
@@ -46,7 +47,7 @@ export function MatchDetail({ id }: { id: string }) {
         <Fact label={lang === "sv" ? "Start" : "Start"} value={startLabel(match, lang)} />
         <Fact label={lang === "sv" ? "Gren" : "Event"} value={match.discipline === "doubles" ? (lang === "sv" ? "Dubbel" : "Doubles") : lang === "sv" ? "Singel" : "Singles"} />
         {match.duration ? <Fact label={lang === "sv" ? "Tid på banan" : "Time on court"} value={match.duration} /> : null}
-        {match.umpire ? <Fact label={lang === "sv" ? "Domare hos ATP" : "Umpire on ATP"} value={match.umpire} /> : null}
+        {match.umpire ? <Fact label={lang === "sv" ? "Domare" : "Umpire"} value={match.umpire} /> : null}
       </dl>
       <div className="mt-8 grid gap-3 sm:grid-cols-2">
         {match.sides.map((side, index) => (
@@ -73,18 +74,9 @@ export function MatchDetail({ id }: { id: string }) {
           </div>
         ))}
       </div>
-      {match.note ? <p className="mt-6 text-sm leading-6 text-muted-foreground">{match.note[lang]}</p> : null}
       <div className="mt-6 flex flex-wrap gap-4 text-sm">
-        {match.sources.map((url) => (
-          <a key={url} href={url} target="_blank" rel="noreferrer" className="text-amber">
-            {lang === "sv" ? "Källa" : "Source"}
-          </a>
-        ))}
-        <Link href="/matcher" className="text-foreground">{lang === "sv" ? "Tillbaka till navet" : "Back to the hub"}</Link>
+        <Link href="/matcher" className="text-foreground">{lang === "sv" ? "Till resultat" : "Back to results"}</Link>
         <Link href="/lottning" className="text-foreground">{lang === "sv" ? "Lottning" : "Draw"}</Link>
-        <a href={links.results} target="_blank" rel="noreferrer" className="text-cyan">
-          {lang === "sv" ? "Arrangörens resultat" : "Organizer results"}
-        </a>
       </div>
     </article>
   );

@@ -8,7 +8,6 @@ import { useDocumentTitle, useI18n } from "@/lib/i18n";
 import {
   filterMatches,
   formatScore,
-  getLinks,
   getPlayer,
   playerName,
   singlesBracket,
@@ -36,7 +35,6 @@ export function DrawView() {
       : "R32",
   );
   const bracket = singlesBracket();
-  const links = getLinks();
 
   function choose(nextEvent: string, nextRound: (typeof rounds)[number]) {
     setEvent(nextEvent);
@@ -53,12 +51,12 @@ export function DrawView() {
   return (
     <div className="pb-16">
       <PageIntro
-        kicker={lang === "sv" ? "Lottning · 9 november" : "Draw · 9 November"}
-        title={lang === "sv" ? "Singel går att läsa. Dubbel bara delvis." : "Singles can be read. Doubles only in part."}
+        kicker={lang === "sv" ? "Lottning · 9 november 2026" : "Draw · 9 November 2026"}
+        title={lang === "sv" ? "Singellottning" : "Singles draw"}
         lede={
           lang === "sv"
-            ? "Singellottningen följer den ordning som gick att läsa hos arrangören och ATP den 9 november. Fyra fripass. Bara färdigspelade matcher flyttar en spelare uppåt. Dubbelns hela träd fanns inte i den läsbara texten."
-            : "The singles draw follows the order that could be read from the organizer and ATP on 9 November. Four byes. Only completed matches move a player up. The full doubles tree was not in the readable text."
+            ? "28 spelare och fyra fripass. En spelare går vidare när matchen är slutspelad."
+            : "28 players and four byes. A player moves on when the match is completed."
         }
       />
       <div className="mx-auto max-w-[1180px] px-5">
@@ -83,8 +81,8 @@ export function DrawView() {
             {(round === "QF" || round === "SF" || round === "F") && (
               <p className="panel mt-6 rounded-xl p-5 text-sm leading-6">
                 {lang === "sv"
-                  ? "Den här omgången hade inga namn den 9 november. Korten nedan är tomma med flit."
-                  : "This round had no names on 9 November. The cards below are empty on purpose."}
+                  ? "Inga namn i den här omgången."
+                  : "No names in this round."}
               </p>
             )}
             <ul className="mt-6 grid gap-3 md:grid-cols-2">
@@ -96,21 +94,16 @@ export function DrawView() {
             </ul>
             <p className="mt-6 text-sm text-muted-foreground">
               {lang === "sv"
-                ? "Kvartsfinal, semifinal och final hade inga namn den 9 november. De visas tomma med flit."
-                : "Quarter-finals, semi-finals and the final had no names on 9 November. They are empty on purpose."}{" "}
-              <a className="text-amber" href={links.draw} target="_blank" rel="noreferrer">
-                {lang === "sv" ? "Arrangörens lottning" : "Organizer draw"}
-              </a>
+                ? "Kvartsfinal, semifinal och final har inga namn än."
+                : "Quarter-finals, semi-finals and the final have no names yet."}
             </p>
           </>
         ) : (
           <div className="mt-6">
             <div className="panel rounded-xl p-5">
-              <h2 className="font-display text-4xl">{lang === "sv" ? "Ingen komplett dubbellottning" : "No complete doubles draw"}</h2>
+              <h2 className="font-display text-4xl">{lang === "sv" ? "Dubbel" : "Doubles"}</h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                {lang === "sv"
-                  ? "Här listas bara dubbelmatcher som gick att verifiera i resultat, schema eller söndagsrapporten. Ett tomt fält betyder att källan inte namngav resten."
-                  : "Only doubles matches that could be verified in results, the order of play or Sunday’s report are listed. An empty field means the source did not name the rest."}
+                {lang === "sv" ? "Publicerade dubbelmatcher." : "Published doubles matches."}
               </p>
             </div>
             <ul className="mt-4 divide-y divide-white/10 border-y border-white/10">
@@ -165,19 +158,19 @@ function SlotCard({ slot }: { slot: BracketSlot }) {
               : "Completed"
             : slot.state === "scheduled"
               ? lang === "sv"
-                ? "Planerad, inget resultat"
-                : "Scheduled, no result"
+                ? "Planerad"
+                : "Scheduled"
               : slot.state === "paired"
                 ? lang === "sv"
-                  ? "Båda klara. Mötet är inte publicerat som spelat."
-                  : "Both through. The meeting is not published as played."
+                ? "Båda vidare. Matchen är inte spelad."
+                : "Both through. The match has not been played."
                 : slot.state === "pending"
                   ? lang === "sv"
-                    ? "I lottningen, utan pass"
-                    : "In the draw, no session"
+                  ? "I lottningen, utan tid"
+                  : "In the draw, no start time"
                   : lang === "sv"
-                    ? "Inte avgjord i ögonblicksbilden"
-                    : "Not decided in the snapshot"}
+                    ? "Inte avgjord"
+                    : "Not decided"}
       </p>
       {slot.matchId ? (
         <Link href={`/matcher/${slot.matchId}`} className="mt-2 inline-block text-sm text-amber">
