@@ -1,35 +1,18 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import Link from "next/link";
-import { Component, useEffect, useState, type ReactNode } from "react";
-import { Button } from "@/components/ui/button";
-import { StaticCourt } from "@/components/static-court";
+import { useEffect, useState } from "react";
+import { CourtScene } from "@/components/court-scene";
 import { useI18n } from "@/lib/i18n";
 import {
   formatScore,
+  getMatch,
   mondayCenterCourt,
-  roundLabel,
   shortSide,
   startLabel,
   statusLabel,
 } from "@/lib/data/adapter";
-
-const CourtScene = dynamic(
-  () => import("@/components/court-scene").then((mod) => mod.CourtScene),
-  { ssr: false },
-);
-
-class SceneBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
-  state = { failed: false };
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-  render() {
-    if (this.state.failed) return <StaticCourt />;
-    return this.props.children;
-  }
-}
+import type { Match } from "@/lib/data/types";
 
 export function Hero() {
   const { lang } = useI18n();
@@ -39,6 +22,7 @@ export function Hero() {
   const [playing, setPlaying] = useState(true);
   const [lite, setLite] = useState(false);
   const order = mondayCenterCourt();
+  const featured = getMatch("m-duckworth-norrie");
 
   useEffect(() => {
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -60,113 +44,128 @@ export function Hero() {
   const showScene = ready && (!reduced || forcePlay);
 
   return (
-    <section className="relative isolate min-h-[100svh] overflow-hidden" aria-labelledby="hero-title">
+    <section className="relative isolate min-h-[920px] overflow-hidden lg:h-[680px] lg:min-h-[680px]" aria-labelledby="hero-title">
       <div className="absolute inset-0">
-        {showScene ? (
-          <SceneBoundary>
-            <CourtScene lite={lite} playing={playing} />
-          </SceneBoundary>
-        ) : (
-          <StaticCourt />
-        )}
+        <CourtScene lite={lite} playing={showScene && playing} />
       </div>
       <div className="hero-scrim pointer-events-none absolute inset-0" />
       <p className="sr-only">
         {lang === "sv"
-          ? "Dekorativ animation av en blå inomhusbana, en studsande boll och bärnstensljus. Inte en sändning från arenan."
-          : "Decorative animation of a blue indoor court, a bouncing ball and amber light. Not a broadcast from the arena."}
+          ? "Mörk tennisarena med bana, nät och färgade strålkastare."
+          : "Dark tennis arena with a court, net and coloured spotlights."}
       </p>
-      <div className="relative z-10 mx-auto flex min-h-[100svh] max-w-[1180px] flex-col justify-end px-5 pt-28 pb-8 lg:justify-center lg:pb-16">
-        <div className="grid items-end gap-8 lg:grid-cols-[minmax(0,1.15fr)_340px] lg:items-center">
+      <div className="relative z-10 mx-auto flex h-full max-w-[1180px] flex-col justify-end px-5 pt-24 pb-8 lg:justify-center lg:pb-10">
+        <div className="grid items-end gap-8 lg:grid-cols-[minmax(0,1.05fr)_340px] lg:items-center">
           <div>
-            <p className="kicker">ATP 250 · Kungl. Tennishallen</p>
-            <h1 id="hero-title" className="mt-3 font-display leading-[0.84] tracking-[0.02em]">
-              <span className="block text-[18vw] text-white sm:text-8xl lg:text-[7.4rem]">STOCKHOLM</span>
-              <span className="word-open block text-[18vw] sm:text-8xl lg:text-[7.4rem]">OPEN</span>
+            <p className="kicker">ATP 250</p>
+            <h1 id="hero-title" className="mt-3 font-display text-[17vw] leading-[0.82] font-semibold tracking-[-0.03em] sm:text-7xl lg:text-[6.6rem]">
+              <span className="block text-white">STOCKHOLM</span>
+              <span className="word-open block">OPEN</span>
             </h1>
-            <p className="mt-5 max-w-xl text-base leading-7 text-[#f4efe6] sm:text-lg">
-              {lang === "sv"
-                ? "Inomhusveckan i en hall som är mörk även mitt på dagen. Blå bana, trävalv och bärnsten i strålkastarna."
-                : "The indoor week in a hall that stays dark even at noon. Blue court, timber vault and amber in the lights."}
+            <p className="mt-4 text-base text-[#f4efe6] sm:text-lg">
+              {lang === "sv" ? "Resultat · 9 november 2026" : "Results · 9 November 2026"}
             </p>
-            <p className="mt-3 max-w-xl text-sm leading-6 text-[#d9d1c4]">
-              {lang === "sv"
-                ? "Arrangören och hallen anger 7–14 november 2026. ATP listar 8–14 november. Kvalet spelades den 7:e. Det här är en ögonblicksbild från den 9:e, inte en livesändning."
-                : "The organizer and the hall say 7–14 November 2026. ATP lists 8–14 November. Qualifying was played on the 7th. This is a 9 November snapshot, not a live broadcast."}
+            <p className="mt-2 flex items-center gap-2 text-sm text-[#d9d1c4]">
+              <span className="inline-block size-1.5 rounded-full bg-amber" aria-hidden />
+              Kungl. Tennishallen
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Button asChild className="h-11 px-5">
-                <Link href="/matcher">{lang === "sv" ? "Till matcherna" : "Go to matches"}</Link>
-              </Button>
-              <Button asChild variant="outline" className="h-11 border-white/20 bg-[#12151c] px-5 text-white hover:bg-white/10">
-                <Link href="/besok">{lang === "sv" ? "Planera besöket" : "Plan the visit"}</Link>
-              </Button>
-              <Button asChild variant="outline" className="h-11 border-white/20 bg-[#12151c] px-5 text-white hover:bg-white/10">
-                <a href="https://www.stockholmopen.se/en/tickets" target="_blank" rel="noreferrer">
-                  {lang === "sv" ? "Biljetter hos arrangören" : "Tickets at the organizer"}
-                </a>
-              </Button>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Link href="/matcher" className="inline-flex h-10 items-center rounded-full border border-amber/80 px-4 text-sm text-amber hover:bg-amber/10">
+                {lang === "sv" ? "Alla resultat" : "All results"}
+              </Link>
+              <Link href="/lottning" className="inline-flex h-10 items-center rounded-full border border-white/20 px-4 text-sm text-white hover:bg-white/10">
+                {lang === "sv" ? "Lottning" : "Draw"}
+              </Link>
             </div>
-            {showScene ? (
-              <button
-                type="button"
-                className="mt-4 text-sm text-[#d7ecff] underline decoration-cyan/50 underline-offset-4"
-                onClick={() => setPlaying((value) => !value)}
-                aria-pressed={playing}
-              >
-                {playing
-                  ? lang === "sv"
-                    ? "Pausa banan"
-                    : "Pause the court"
-                  : lang === "sv"
-                    ? "Spela banan"
-                    : "Play the court"}
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="mt-4 text-sm text-[#d7ecff] underline decoration-cyan/50 underline-offset-4"
-                onClick={() => setForcePlay(true)}
-              >
-                {lang === "sv" ? "Spela bananimationen" : "Play the court animation"}
-              </button>
-            )}
           </div>
-          <aside className="panel rounded-xl p-4 shadow-2xl">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="kicker">{lang === "sv" ? "Center Court · 9 november" : "Centre Court · 9 November"}</p>
-                <h2 className="mt-1 font-display text-3xl tracking-wide">
-                  {lang === "sv" ? "Publicerad ordning" : "Published order"}
-                </h2>
+          <div className="grid gap-3">
+            <aside className="glass-panel rounded-2xl p-4">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-[0.68rem] tracking-[0.18em] text-[#d7ecff] uppercase">
+                  {lang === "sv" ? "Center Court" : "Centre Court"}
+                </p>
+                <p className="text-[0.68rem] tracking-[0.16em] text-amber uppercase">
+                  {lang === "sv" ? "9 november" : "9 November"}
+                </p>
               </div>
-              <span className="rounded-full border border-amber/40 px-2 py-1 text-[0.65rem] tracking-[0.14em] text-amber uppercase">
-                {lang === "sv" ? "Ögonblicksbild" : "Snapshot"}
-              </span>
-            </div>
-            <ol className="mt-4 divide-y divide-white/10">
-              {order.map((match) => (
-                <li key={match.id}>
-                  <Link href={`/matcher/${match.id}`} className="grid grid-cols-[5.5rem_1fr] gap-3 py-3 hover:text-amber">
-                    <span className="text-xs leading-5 text-cyan">{startLabel(match, lang)}</span>
-                    <span>
-                      <span className="block text-sm">{shortSide(match.sides[0])} – {shortSide(match.sides[1])}</span>
-                      <span className="mt-1 block text-xs text-muted-foreground">
-                        {roundLabel(match.round, lang, match.discipline)}
-                        {" · "}
+              <ol className="mt-2 divide-y divide-white/10">
+                {order.map((match) => (
+                  <li key={match.id}>
+                    <Link href={`/matcher/${match.id}`} className="grid grid-cols-[4.6rem_1fr_auto] items-center gap-2 py-2.5 hover:text-amber">
+                      <span className="text-xs text-cyan">{startLabel(match, lang)}</span>
+                      <span className="truncate text-sm">{compactSide(match.sides[0])} – {compactSide(match.sides[1])}</span>
+                      <span className={`text-xs ${match.status === "completed" ? "text-white" : "text-amber"}`}>
                         {match.score ? formatScore(match.score) : statusLabel(match.status, lang)}
                       </span>
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ol>
-            <Link href="/matcher?date=2026-11-09" className="mt-2 inline-block text-sm text-amber">
-              {lang === "sv" ? "Hela matchnavet" : "Full match hub"} →
-            </Link>
-          </aside>
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+            </aside>
+            {featured?.score ? <ScorePanel match={featured} lang={lang} /> : null}
+          </div>
         </div>
       </div>
+      <button
+        type="button"
+        className="absolute bottom-4 left-5 z-20 rounded-full border border-white/15 bg-black/40 px-3 py-1.5 text-xs text-[#d7ecff] backdrop-blur-sm"
+        onClick={() => (showScene ? setPlaying((value) => !value) : setForcePlay(true))}
+        aria-pressed={showScene ? playing : false}
+      >
+        {showScene
+          ? playing
+            ? lang === "sv"
+              ? "Pausa ljuset"
+              : "Pause the lights"
+            : lang === "sv"
+              ? "Spela ljuset"
+              : "Play the lights"
+          : lang === "sv"
+            ? "Visa ljuset"
+            : "Show the lights"}
+      </button>
     </section>
+  );
+}
+
+function compactSide(side: Match["sides"][number]) {
+  return side.members
+    .map((member) => {
+      const parts = member.name.trim().split(/\s+/);
+      if (parts.length < 2) return parts[0] ?? "";
+      return `${parts[0].charAt(0)}. ${parts[parts.length - 1]}`;
+    })
+    .join(" / ");
+}
+
+function ScorePanel({ match, lang }: { match: Match; lang: "sv" | "en" }) {
+  return (
+    <aside className="glass-panel rounded-2xl p-4">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-[0.68rem] tracking-[0.18em] text-cyan uppercase">
+          {lang === "sv" ? "Resultat" : "Result"}
+        </p>
+        <p className="text-[0.68rem] tracking-[0.16em] text-amber uppercase">
+          {lang === "sv" ? "Slutspelad" : "Completed"}
+        </p>
+      </div>
+      <div className="mt-3 space-y-2">
+        {match.sides.map((side, index) => (
+          <div key={index} className="flex items-center justify-between gap-3 border-t border-white/10 pt-2">
+            <span className={match.winner === index ? "text-white" : "text-white/65"}>
+              {shortSide(side)}
+            </span>
+            <span className="flex gap-3 font-display text-2xl tracking-wide text-white">
+              {match.score?.sets.map((set, setIndex) => (
+                <span key={setIndex}>{set.games[index]}</span>
+              ))}
+            </span>
+          </div>
+        ))}
+      </div>
+      <Link href={`/matcher/${match.id}`} className="mt-3 inline-block text-xs tracking-[0.12em] text-amber uppercase">
+        {lang === "sv" ? "Matchfakta" : "Match facts"} →
+      </Link>
+    </aside>
   );
 }

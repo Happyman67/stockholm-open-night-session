@@ -1,295 +1,283 @@
 "use client";
 
-import { useMemo, useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import * as THREE from "three";
+import { useEffect, useRef } from "react";
 
-function feltTexture() {
-  const canvas = document.createElement("canvas");
-  canvas.width = 512;
-  canvas.height = 512;
-  const context = canvas.getContext("2d");
-  if (!context) return null;
-  context.fillStyle = "#d7e45a";
-  context.fillRect(0, 0, 512, 512);
-  for (let i = 0; i < 2200; i += 1) {
-    context.fillStyle = i % 2 ? "rgba(255,255,255,0.05)" : "rgba(70,80,10,0.09)";
-    const x = (Math.sin(i * 12.9898) * 43758.5453) % 512;
-    const y = (Math.sin(i * 78.233) * 24634.6345) % 512;
-    context.fillRect(Math.abs(x), Math.abs(y), 2, 2);
+type Point = { x: number; y: number };
+
+type Frame = {
+  width: number;
+  height: number;
+  mobile: boolean;
+  project: (u: number, t: number) => Point;
+};
+
+function frameFor(width: number, height: number, lite: boolean): Frame {
+  const mobile = lite || width < 760;
+  const stage = mobile ? Math.min(height, 760) : height;
+  const z0 = mobile ? 1.08 : 1.15;
+  const z1 = mobile ? 3.15 : 3.55;
+  const focal = stage * (mobile ? 0.72 : 0.78);
+  const vpX = width * (mobile ? 0.56 : 0.5);
+  const vpY = stage * (mobile ? 0.14 : 0.2);
+  return {
+    width,
+    height,
+    mobile,
+    project(u, t) {
+      const z = z0 + t * (z1 - z0);
+      const y = vpY + focal / z;
+      const half = (width * (mobile ? 0.62 : 0.42) * z0) / z;
+      return { x: vpX + u * half, y };
+    },
+  };
+}
+
+function polygon(ctx: CanvasRenderingContext2D, points: Point[]) {
+  ctx.beginPath();
+  points.forEach((point, index) => {
+    if (index === 0) ctx.moveTo(point.x, point.y);
+    else ctx.lineTo(point.x, point.y);
+  });
+  ctx.closePath();
+}
+
+function strokeCourtLine(
+  ctx: CanvasRenderingContext2D,
+  a: Point,
+  b: Point,
+  width: number,
+) {
+  ctx.save();
+  ctx.strokeStyle = "rgba(150, 220, 255, 0.35)";
+  ctx.lineWidth = width + 1.6;
+  ctx.shadowColor = "rgba(120, 200, 255, 0.85)";
+  ctx.shadowBlur = 6;
+  ctx.beginPath();
+  ctx.moveTo(a.x, a.y);
+  ctx.lineTo(b.x, b.y);
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = "rgba(244, 251, 255, 0.92)";
+  ctx.lineWidth = width;
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawStands(ctx: CanvasRenderingContext2D, frame: Frame) {
+  const { width, height, mobile, project } = frame;
+  const far = project(0, 1);
+  const farHalf = project(1, 1).x - far.x;
+  ctx.save();
+  const bowl = ctx.createRadialGradient(far.x, far.y, farHalf * 0.2, far.x, far.y - height * 0.08, width * 0.55);
+  bowl.addColorStop(0, "rgba(18, 28, 44, 0.55)");
+  bowl.addColorStop(0.45, "rgba(8, 12, 20, 0.35)");
+  bowl.addColorStop(1, "rgba(4, 6, 10, 0)");
+  ctx.fillStyle = bowl;
+  ctx.fillRect(0, 0, width, height);
+
+  const rows = mobile ? 7 : 11;
+  for (let row = 0; row < rows; row += 1) {
+    const y = far.y - 6 - row * (mobile ? 8 : 11);
+    const rx = farHalf * 1.05 + row * (mobile ? 16 : 28);
+    const ry = 6 + row * 0.35;
+    ctx.beginPath();
+    ctx.ellipse(far.x, y, rx, ry, 0, Math.PI * 0.92, Math.PI * 2.08);
+    ctx.strokeStyle = row % 2 === 0 ? "rgba(36, 50, 72, 0.95)" : "rgba(16, 24, 38, 0.95)";
+    ctx.lineWidth = mobile ? 6 : 9;
+    ctx.stroke();
+    ctx.strokeStyle = "rgba(70, 96, 128, 0.28)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
   }
-  context.strokeStyle = "rgba(255,255,255,0.9)";
-  context.lineWidth = 8;
-  context.lineCap = "round";
-  context.beginPath();
-  context.ellipse(256, 270, 150, 190, 0.55, 0.15, 2.2);
-  context.stroke();
-  context.beginPath();
-  context.ellipse(250, 250, 160, 180, -0.7, 0.9, 2.9);
-  context.stroke();
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.anisotropy = 4;
-  return texture;
-}
 
-function netTexture() {
-  const canvas = document.createElement("canvas");
-  canvas.width = 256;
-  canvas.height = 64;
-  const context = canvas.getContext("2d");
-  if (!context) return null;
-  context.clearRect(0, 0, 256, 64);
-  context.strokeStyle = "rgba(236,242,246,0.8)";
-  context.lineWidth = 1.4;
-  for (let x = 0; x <= 256; x += 8) {
-    context.beginPath();
-    context.moveTo(x, 0);
-    context.lineTo(x, 64);
-    context.stroke();
-  }
-  for (let y = 0; y <= 64; y += 8) {
-    context.beginPath();
-    context.moveTo(0, y);
-    context.lineTo(256, y);
-    context.stroke();
-  }
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  return texture;
-}
-
-function Mark({
-  position,
-  size,
-}: {
-  position: [number, number, number];
-  size: [number, number, number];
-}) {
-  return (
-    <mesh position={position}>
-      <boxGeometry args={size} />
-      <meshStandardMaterial
-        color="#dff8ff"
-        emissive="#7ee7ff"
-        emissiveIntensity={0.65}
-        roughness={0.35}
-      />
-    </mesh>
-  );
-}
-
-function Court() {
-  const net = useMemo(() => netTexture(), []);
-  return (
-    <group>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.04, -0.4]}>
-        <planeGeometry args={[28, 28]} />
-        <meshStandardMaterial color="#05060a" roughness={1} />
-      </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, -0.2]} receiveShadow>
-        <planeGeometry args={[7.1, 12.6]} />
-        <meshStandardMaterial
-          color="#1566e0"
-          emissive="#0a3f9e"
-          emissiveIntensity={0.45}
-          roughness={0.38}
-          metalness={0.12}
-        />
-      </mesh>
-      <Mark position={[0, 0.02, 6.05]} size={[6.7, 0.025, 0.045]} />
-      <Mark position={[0, 0.02, -6.45]} size={[6.7, 0.025, 0.045]} />
-      <Mark position={[-3.35, 0.02, -0.2]} size={[0.04, 0.025, 12.5]} />
-      <Mark position={[3.35, 0.02, -0.2]} size={[0.04, 0.025, 12.5]} />
-      <Mark position={[-2.45, 0.02, -0.2]} size={[0.03, 0.02, 12.5]} />
-      <Mark position={[2.45, 0.02, -0.2]} size={[0.03, 0.02, 12.5]} />
-      <Mark position={[0, 0.02, 3.15]} size={[4.9, 0.02, 0.035]} />
-      <Mark position={[0, 0.02, -3.55]} size={[4.9, 0.02, 0.035]} />
-      <Mark position={[0, 0.02, -0.2]} size={[0.03, 0.02, 6.7]} />
-      <Mark position={[0, 0.02, 5.55]} size={[0.03, 0.02, 0.7]} />
-      <Mark position={[0, 0.02, -5.95]} size={[0.03, 0.02, 0.7]} />
-      <mesh position={[0, 0.42, -0.2]}>
-        <planeGeometry args={[6.9, 0.72]} />
-        <meshBasicMaterial
-          map={net ?? undefined}
-          transparent
-          opacity={0.85}
-          side={THREE.DoubleSide}
-          depthWrite={false}
-        />
-      </mesh>
-      <mesh position={[0, 0.8, -0.2]}>
-        <boxGeometry args={[7.05, 0.035, 0.035]} />
-        <meshStandardMaterial color="#f4f7f8" roughness={0.4} />
-      </mesh>
-    </group>
-  );
-}
-
-function Ball({ lite }: { lite: boolean }) {
-  const ball = useRef<THREE.Mesh>(null);
-  const shadow = useRef<THREE.Mesh>(null);
-  const felt = useMemo(() => feltTexture(), []);
-  useFrame(({ clock }) => {
-    const cycle = 5.6;
-    const u = (clock.getElapsedTime() % cycle) / cycle;
-    const z = lite ? 1.4 - u * 5.2 : 4.6 - u * 8.8;
-    const x = Math.sin(u * Math.PI * 2) * 0.72;
-    const hop = (u * 4) % 1;
-    const height = Math.sin(hop * Math.PI);
-    const y = 0.2 + height * height * (1.45 - u * 0.45);
-    if (ball.current) {
-      ball.current.position.set(x, y, z);
-      ball.current.rotation.x = clock.getElapsedTime() * 5.5;
-      ball.current.rotation.z = clock.getElapsedTime() * 1.8;
+  for (const side of [-1, 1]) {
+    for (let row = 0; row < (mobile ? 4 : 6); row += 1) {
+      ctx.beginPath();
+      for (let step = 4; step <= 10; step += 1) {
+        const point = project(side * (1.08 + row * 0.07), step / 10);
+        const y = point.y - row * (mobile ? 4 : 6);
+        if (step === 0) ctx.moveTo(point.x, y);
+        else ctx.lineTo(point.x, y);
+      }
+      ctx.strokeStyle = "rgba(28, 40, 58, 0.55)";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
     }
-    if (shadow.current) {
-      shadow.current.position.set(x, 0.03, z);
-      const scale = 1.05 - Math.min(y, 1.5) / 2.4;
-      shadow.current.scale.setScalar(Math.max(scale, 0.35));
+  }
+  ctx.restore();
+}
+
+function drawCourt(ctx: CanvasRenderingContext2D, frame: Frame) {
+  const { project } = frame;
+  const corner = (u: number, t: number) => project(u, t);
+  const apron = [corner(-1.45, 0), corner(1.45, 0), corner(1.45, 1), corner(-1.45, 1)];
+  ctx.fillStyle = "#070b12";
+  polygon(ctx, apron);
+  ctx.fill();
+
+  const surface = [corner(-1, 0), corner(1, 0), corner(1, 1), corner(-1, 1)];
+  const near = project(0, 0);
+  const far = project(0, 1);
+  const surfacePaint = ctx.createLinearGradient(near.x, near.y, far.x, far.y);
+  surfacePaint.addColorStop(0, "#08203f");
+  surfacePaint.addColorStop(1, "#061428");
+  ctx.fillStyle = surfacePaint;
+  polygon(ctx, surface);
+  ctx.fill();
+
+  const singles = 8.23 / 10.97;
+  const serviceNear = 0.5 - 6.4 / 23.77;
+  const serviceFar = 0.5 + 6.4 / 23.77;
+  const boundary: Array<[number, number, number, number]> = [
+    [-1, 0, 1, 0],
+    [-1, 1, 1, 1],
+    [-1, 0, -1, 1],
+    [1, 0, 1, 1],
+    [-singles, 0, -singles, 1],
+    [singles, 0, singles, 1],
+    [-singles, serviceNear, singles, serviceNear],
+    [-singles, serviceFar, singles, serviceFar],
+    [0, serviceNear, 0, serviceFar],
+    [0, 0.02, 0, 0.07],
+    [0, 0.93, 0, 0.98],
+  ];
+  for (const [u0, t0, u1, t1] of boundary) {
+    const a = project(u0, t0);
+    const b = project(u1, t1);
+    const scale = 1.15 - ((t0 + t1) / 2) * 0.55;
+    strokeCourtLine(ctx, a, b, Math.max(0.7, scale));
+  }
+
+  const left = project(-1.04, 0.5);
+  const right = project(1.04, 0.5);
+  const netHeight = frame.mobile ? 12 : 16;
+  ctx.save();
+  ctx.strokeStyle = "rgba(214, 230, 242, 0.28)";
+  ctx.lineWidth = 1;
+  const steps = 18;
+  for (let index = 0; index <= steps; index += 1) {
+    const x = left.x + ((right.x - left.x) * index) / steps;
+    const y = left.y + ((right.y - left.y) * index) / steps;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x, y - netHeight);
+    ctx.stroke();
+  }
+  ctx.strokeStyle = "rgba(244, 251, 255, 0.8)";
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.moveTo(left.x, left.y - netHeight);
+  ctx.lineTo(right.x, right.y - netHeight);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawBeams(ctx: CanvasRenderingContext2D, frame: Frame, time: number) {
+  const { width, height, mobile } = frame;
+  const beams = mobile
+    ? [
+        { x: 0.22, rgb: "244, 246, 255", fixture: "#f7f8ff", glow: "rgba(255,255,255,0.85)", tilt: -0.04, phase: 0.2, travel: 0.55 },
+        { x: 0.5, rgb: "255, 132, 28", fixture: "#ffb15a", glow: "rgba(255,140,40,0.9)", tilt: 0.02, phase: 2.3, travel: 0.62 },
+        { x: 0.78, rgb: "186, 96, 255", fixture: "#e4c2ff", glow: "rgba(180,90,255,0.9)", tilt: 0.05, phase: 4.2, travel: 0.55 },
+      ]
+    : [
+        { x: 0.16, rgb: "244, 246, 255", fixture: "#f7f8ff", glow: "rgba(255,255,255,0.9)", tilt: -0.18, phase: 0.3, travel: 0.72 },
+        { x: 0.38, rgb: "255, 128, 24", fixture: "#ffb15a", glow: "rgba(255,140,40,0.9)", tilt: -0.02, phase: 2.6, travel: 0.8 },
+        { x: 0.62, rgb: "176, 84, 255", fixture: "#e4c2ff", glow: "rgba(176,90,255,0.9)", tilt: 0.04, phase: 4.5, travel: 0.76 },
+        { x: 0.84, rgb: "255, 248, 240", fixture: "#fffaf4", glow: "rgba(255,255,255,0.85)", tilt: 0.18, phase: 1.2, travel: 0.64 },
+      ];
+  const length = height * (mobile ? 0.36 : 0.6);
+  const spread = mobile ? 46 : 100;
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  for (const beam of beams) {
+    const sweep = Math.sin(time / 1100 + beam.phase) * beam.travel;
+    const white = beam.rgb.startsWith("244") || beam.rgb.startsWith("255, 248");
+    const layers = mobile ? 5 : 7;
+    ctx.save();
+    ctx.translate(width * beam.x, height * 0.05);
+    ctx.rotate(beam.tilt + sweep);
+    for (let layer = layers; layer >= 1; layer -= 1) {
+      const t = layer / layers;
+      const strength = (white ? 0.1 : 0.16) * t * t * (mobile ? 0.85 : 1);
+      const paint = ctx.createLinearGradient(0, 0, 0, length);
+      paint.addColorStop(0, `rgba(${beam.rgb}, ${strength})`);
+      paint.addColorStop(0.32, `rgba(${beam.rgb}, ${strength * 0.32})`);
+      paint.addColorStop(1, `rgba(${beam.rgb}, 0)`);
+      ctx.fillStyle = paint;
+      ctx.beginPath();
+      ctx.moveTo(0, 4);
+      ctx.lineTo((-spread * t) / 2, length);
+      ctx.lineTo((spread * t) / 2, length);
+      ctx.closePath();
+      ctx.fill();
     }
-  });
-  return (
-    <group>
-      <mesh ref={ball}>
-        <sphereGeometry args={[0.18, 42, 42]} />
-        <meshStandardMaterial
-          map={felt ?? undefined}
-          color="#e6f06a"
-          roughness={0.72}
-          emissive="#c4922a"
-          emissiveIntensity={0.18}
-        />
-      </mesh>
-      <mesh ref={shadow} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 2]}>
-        <circleGeometry args={[0.2, 24]} />
-        <meshBasicMaterial color="#04101f" transparent opacity={0.38} depthWrite={false} />
-      </mesh>
-    </group>
-  );
+    ctx.restore();
+    ctx.fillStyle = beam.fixture;
+    ctx.shadowColor = beam.glow;
+    ctx.shadowBlur = mobile ? 8 : 14;
+    ctx.fillRect(width * beam.x - 9, height * 0.046, 18, 4);
+  }
+  ctx.restore();
 }
 
-function unit(seed: number) {
-  const value = Math.sin(seed * 12.9898) * 43758.5453;
-  return value - Math.floor(value);
+function paint(ctx: CanvasRenderingContext2D, width: number, height: number, lite: boolean, time: number) {
+  const frame = frameFor(width, height, lite);
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#04060b";
+  ctx.fillRect(0, 0, width, height);
+  const ambient = ctx.createRadialGradient(width * 0.5, height * 0.28, 20, width * 0.5, height * 0.35, width * 0.48);
+  ambient.addColorStop(0, "rgba(28, 58, 96, 0.28)");
+  ambient.addColorStop(1, "rgba(4, 6, 11, 0)");
+  ctx.fillStyle = ambient;
+  ctx.fillRect(0, 0, width, height);
+  drawStands(ctx, frame);
+  drawCourt(ctx, frame);
+  const vignette = ctx.createRadialGradient(width * 0.5, height * 0.45, width * 0.2, width * 0.5, height * 0.5, width * 0.72);
+  vignette.addColorStop(0, "rgba(0, 0, 0, 0)");
+  vignette.addColorStop(1, "rgba(0, 0, 0, 0.38)");
+  ctx.fillStyle = vignette;
+  ctx.fillRect(0, 0, width, height);
+  drawBeams(ctx, frame, time);
 }
 
-function Architecture({ lite }: { lite: boolean }) {
-  const dust = useMemo(
-    () =>
-      Array.from({ length: lite ? 18 : 42 }, (_, index) => ({
-        position: [
-          (unit(index + 1) - 0.5) * 12,
-          0.4 + unit(index + 40) * 4.6,
-          -7 + unit(index + 80) * 12,
-        ] as [number, number, number],
-        scale: 0.012 + unit(index + 120) * 0.02,
-        color: unit(index + 160) > 0.72 ? "#8eebff" : "#ffc27a",
-      })),
-    [lite],
-  );
-  const group = useRef<THREE.Group>(null);
-  useFrame((_, delta) => {
-    if (group.current) group.current.rotation.y += delta * 0.015;
-  });
-  return (
-    <group>
-      <mesh position={[0, 0.2, -7.1]}>
-        <torusGeometry args={[3.55, 0.045, 16, 80, Math.PI]} />
-        <meshStandardMaterial color="#d9fbff" emissive="#3ad4ff" emissiveIntensity={1.8} />
-      </mesh>
-      <mesh position={[0, 1.15, -6.3]} rotation={[0.4, 0, 0]}>
-        <torusGeometry args={[6.4, 0.28, 12, 40, Math.PI]} />
-        <meshStandardMaterial color="#6b4124" roughness={0.78} metalness={0.04} />
-      </mesh>
-      {[-2.2, 0, 2.2].map((x) => (
-        <mesh key={x} position={[x, 4.7, -1.5]} rotation={[0.55, 0, 0]}>
-          <boxGeometry args={[0.035, 0.035, 11]} />
-          <meshStandardMaterial color="#242830" metalness={0.65} roughness={0.3} />
-        </mesh>
-      ))}
-      <mesh position={[0, 3.85, -2.4]}>
-        <boxGeometry args={[2.2, 0.62, 0.08]} />
-        <meshStandardMaterial
-          color="#0c1016"
-          emissive="#123044"
-          emissiveIntensity={0.55}
-          metalness={0.35}
-          roughness={0.4}
-        />
-      </mesh>
-      <mesh position={[-1.5, 4.2, 1.2]} rotation={[0.15, 0.1, 0.15]}>
-        <coneGeometry args={[1.5, 6.5, 20, 1, true]} />
-        <meshBasicMaterial color="#e39a45" transparent opacity={0.045} depthWrite={false} side={THREE.DoubleSide} />
-      </mesh>
-      <mesh position={[2.4, 3.2, -1]} rotation={[0.4, -0.4, -0.5]}>
-        <coneGeometry args={[1.1, 5.5, 16, 1, true]} />
-        <meshBasicMaterial color="#67e7ff" transparent opacity={0.04} depthWrite={false} side={THREE.DoubleSide} />
-      </mesh>
-      <group ref={group}>
-        {dust.map((speck, index) => (
-          <mesh key={index} position={speck.position}>
-            <sphereGeometry args={[speck.scale, 6, 6]} />
-            <meshBasicMaterial color={speck.color} transparent opacity={0.55} depthWrite={false} />
-          </mesh>
-        ))}
-      </group>
-    </group>
-  );
-}
+export function CourtScene({ lite, playing }: { lite: boolean; playing: boolean }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-function Rig({ drift }: { drift: boolean }) {
-  useFrame(({ camera, clock }) => {
-    const t = clock.getElapsedTime();
-    camera.position.x = drift ? Math.sin(t * 0.12) * 0.22 : 0;
-    camera.position.y = 2.25 + (drift ? Math.sin(t * 0.08) * 0.04 : 0);
-    camera.lookAt(0, 0.45, -0.8);
-  });
-  return null;
-}
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const parent = canvas?.parentElement;
+    if (!canvas || !parent) return;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+    let frame = 0;
+    const draw = (time: number) => {
+      const bounds = parent.getBoundingClientRect();
+      const width = Math.max(1, bounds.width);
+      const height = Math.max(1, bounds.height);
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const pixelWidth = Math.round(width * dpr);
+      const pixelHeight = Math.round(height * dpr);
+      if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
+        canvas.width = pixelWidth;
+        canvas.height = pixelHeight;
+      }
+      context.setTransform(dpr, 0, 0, dpr, 0, 0);
+      paint(context, width, height, lite, playing ? time : 0);
+    };
+    const resize = () => draw(0);
+    const observer = new ResizeObserver(resize);
+    observer.observe(parent);
+    const loop = (time: number) => {
+      draw(time);
+      if (playing) frame = requestAnimationFrame(loop);
+    };
+    frame = requestAnimationFrame(loop);
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
+  }, [lite, playing]);
 
-export function CourtScene({
-  lite,
-  playing,
-}: {
-  lite: boolean;
-  playing: boolean;
-}) {
-  return (
-    <Canvas
-      dpr={lite ? 1 : [1, 1.5]}
-      frameloop={playing ? "always" : "never"}
-      camera={{ position: [0, 2.25, 8.1], fov: 36, near: 0.1, far: 40 }}
-      gl={{ antialias: !lite, alpha: false, powerPreference: lite ? "low-power" : "default" }}
-      onCreated={({ gl }) => {
-        gl.setClearColor("#07080c");
-        gl.toneMapping = THREE.ACESFilmicToneMapping;
-        gl.toneMappingExposure = 1.18;
-      }}
-    >
-      <fog attach="fog" args={["#07080c", 9, 22]} />
-      <ambientLight intensity={0.55} color="#c5d8ff" />
-      <spotLight
-        position={[-2.2, 7.5, 3.2]}
-        angle={0.62}
-        penumbra={0.75}
-        intensity={90}
-        color="#ffb15e"
-        distance={24}
-      />
-      <spotLight
-        position={[4.2, 4.6, -1.5]}
-        angle={0.7}
-        penumbra={0.8}
-        intensity={36}
-        color="#7ee7ff"
-        distance={20}
-      />
-      <pointLight position={[0, 1.4, 2.2]} intensity={6} color="#ffe0b0" distance={8} />
-      <Court />
-      <Ball lite={lite} />
-      <Architecture lite={lite} />
-      <Rig drift={!lite && playing} />
-    </Canvas>
-  );
+  return <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" aria-hidden />;
 }

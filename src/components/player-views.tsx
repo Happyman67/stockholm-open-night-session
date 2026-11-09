@@ -13,7 +13,6 @@ import {
   entryLabel,
   formatDate,
   formatScore,
-  getEntryListGaps,
   getPlayer,
   getPlayers,
   matchesForPlayer,
@@ -62,12 +61,12 @@ export function PlayerDirectory() {
   return (
     <div className="pb-16">
       <PageIntro
-        kicker={lang === "sv" ? "Spelare · verifierade namn" : "Players · verified names"}
-        title={lang === "sv" ? "Huvudlottning och kval" : "Main draw and qualifying"}
+        kicker={lang === "sv" ? "Spelare" : "Players"}
+        title={lang === "sv" ? "Huvudlottning" : "Main draw"}
         lede={
           lang === "sv"
-            ? "Registret följer lottning och kvalresultat som gick att läsa 9 november. Ranking, prispengar och årsfacit från arrangörens spelarwidget visas inte. Widgeten såg ofullständig ut, bland annat med 0–0 i årsfacit mitt under turneringen."
-            : "The directory follows the draw and qualifying results that could be read on 9 November. Rankings, prize money and season records from the organizer’s player widget are not shown. The widget looked incomplete, including a 0–0 season record during the tournament."
+            ? "Seedning, wild cards och kval."
+            : "Seeds, wildcards and qualifying."
         }
       />
       <div className="mx-auto max-w-[1180px] px-5">
@@ -123,24 +122,6 @@ export function PlayerDirectory() {
             ))}
           </ul>
         )}
-        <aside className="mt-10 border-t border-white/10 pt-6">
-          <h2 className="font-display text-3xl">{lang === "sv" ? "Namn som inte stod i lottningen" : "Names that were not in the draw"}</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            {lang === "sv"
-              ? "Arrangörens spelarsida länkade även de här profilerna. De fanns inte i den singellottning som gick att läsa 9 november, så de räknas inte som huvudlottade här."
-              : "The organizer’s player page also linked these profiles. They were not in the singles draw that could be read on 9 November, so they are not treated as main-draw players here."}
-          </p>
-          <ul className="mt-3 space-y-1 text-sm">
-            {getEntryListGaps().map((person) => (
-              <li key={person.url}>
-                <a href={person.url} className="text-amber" target="_blank" rel="noreferrer">
-                  {person.name}
-                </a>
-                <span className="text-muted-foreground"> · {person.country}</span>
-              </li>
-            ))}
-          </ul>
-        </aside>
       </div>
     </div>
   );
@@ -160,7 +141,7 @@ export function PlayerProfile({ id }: { id: string }) {
     <article className="mx-auto max-w-[900px] px-5 py-12">
       <p className="kicker">
         {player.countryCode ?? (lang === "sv" ? "Land ej angivet" : "Country not stated")}
-        {player.mainDraw ? "" : lang === "sv" ? " · endast kval i ögonblicksbilden" : " · qualifying only in the snapshot"}
+        {player.mainDraw ? "" : lang === "sv" ? " · kval" : " · qualifying"}
       </p>
       <h1 className="mt-3 font-display text-6xl leading-none tracking-wide sm:text-7xl">{player.last.toUpperCase()}</h1>
       <p className="mt-3 text-xl text-muted-foreground">{player.first} · {player.country[lang]}</p>
@@ -178,17 +159,12 @@ export function PlayerProfile({ id }: { id: string }) {
         {player.birth ? <Fact label={lang === "sv" ? "Född" : "Born"} value={player.birth} /> : null}
         {player.birthplace ? <Fact label={lang === "sv" ? "Födelseort" : "Birthplace"} value={player.birthplace[lang]} /> : null}
         {player.heightCm ? <Fact label={lang === "sv" ? "Längd" : "Height"} value={`${player.heightCm} cm`} /> : null}
-        {player.coach ? <Fact label={lang === "sv" ? "Tränare i profilen" : "Coach on the profile"} value={player.coach} /> : null}
+        {player.coach ? <Fact label={lang === "sv" ? "Tränare" : "Coach"} value={player.coach} /> : null}
       </dl>
-      <p className="mt-4 text-sm leading-6 text-muted-foreground">
-        {lang === "sv"
-          ? "Födelsedata och tränare kommer bara med när arrangörens spelarprofil hade läsbara fält den 9 november. Rankingtal från samma widget används inte."
-          : "Birth details and coach are included only when the organizer’s player profile had readable fields on 9 November. Ranking figures from that widget are not used."}
-      </p>
-      <h2 className="mt-10 font-display text-4xl">{lang === "sv" ? "I ögonblicksbilden" : "In the snapshot"}</h2>
+      <h2 className="mt-10 font-display text-4xl">{lang === "sv" ? "Matcher" : "Matches"}</h2>
       {matches.length === 0 ? (
         <p className="mt-3 text-sm text-muted-foreground">
-          {lang === "sv" ? "Inget publicerat möte utöver ett eventuellt fripass." : "No published match beyond a possible bye."}
+          {lang === "sv" ? "Inget resultat utöver ett eventuellt fripass." : "No result beyond a possible bye."}
         </p>
       ) : (
         <ul className="mt-3 divide-y divide-white/10 border-y border-white/10">
@@ -206,13 +182,9 @@ export function PlayerProfile({ id }: { id: string }) {
         </ul>
       )}
       <div className="mt-6 flex flex-wrap gap-4 text-sm">
-        {player.officialUrl ? (
-          <a href={player.officialUrl} target="_blank" rel="noreferrer" className="text-amber">
-            {lang === "sv" ? "Arrangörens profil" : "Organizer profile"}
-          </a>
-        ) : null}
         <Link href="/spelare">{lang === "sv" ? "Alla spelare" : "All players"}</Link>
         <Link href="/lottning">{lang === "sv" ? "Lottning" : "Draw"}</Link>
+        <Link href="/matcher">{lang === "sv" ? "Resultat" : "Results"}</Link>
       </div>
     </article>
   );

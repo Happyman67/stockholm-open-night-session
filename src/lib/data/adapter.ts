@@ -239,7 +239,7 @@ const months: Record<Lang, string[]> = {
 
 export function formatDate(iso: string | undefined, lang: Lang) {
   if (!iso) {
-    return lang === "sv" ? "Inget publicerat pass" : "No published session";
+    return lang === "sv" ? "Datum saknas" : "No date";
   }
   const [year, month, day] = iso.split("-").map(Number);
   const weekday = weekdays[iso]?.[lang];
@@ -248,15 +248,16 @@ export function formatDate(iso: string | undefined, lang: Lang) {
 }
 
 export function roundLabel(round: Round, lang: Lang, discipline?: Discipline) {
+  const doubles = discipline === "doubles";
   const map: Record<Round, Localized> = {
     Q1: { sv: "Kval, omgång 1", en: "Qualifying, round 1" },
     Q2: { sv: "Kval, omgång 2", en: "Qualifying, round 2" },
     R32: { sv: "Första omgången", en: "Round of 32" },
     R16: {
-      sv: discipline === "doubles" ? "Dubbel, andra omgången" : "Andra omgången",
-      en: discipline === "doubles" ? "Doubles, round of 16" : "Round of 16",
+      sv: doubles ? "Andra omgången" : "Andra omgången",
+      en: doubles ? "Round of 16" : "Round of 16",
     },
-    D: { sv: "Dubbel, omgång ej angiven", en: "Doubles, round not stated" },
+    D: { sv: "Match", en: "Match" },
   };
   return map[round][lang];
 }
@@ -265,7 +266,7 @@ export function statusLabel(status: MatchStatus, lang: Lang) {
   const map: Record<MatchStatus, Localized> = {
     completed: { sv: "Slutspelad", en: "Completed" },
     scheduled: { sv: "Planerad", en: "Scheduled" },
-    pending: { sv: "Saknar pass", en: "No session yet" },
+    pending: { sv: "Utan tid", en: "No start time" },
   };
   return map[status][lang];
 }
@@ -274,7 +275,7 @@ export function courtLabel(court: Court, lang: Lang) {
   const map: Record<Court, Localized> = {
     center: { sv: "Center Court", en: "Centre Court" },
     court1: { sv: "Bana 1", en: "Court 1" },
-    unspecified: { sv: "Bana ej angiven", en: "Court not stated" },
+    unspecified: { sv: "Bana saknas", en: "Court not set" },
   };
   return map[court][lang];
 }
@@ -287,7 +288,7 @@ export function startLabel(match: Match, lang: Lang) {
   if (match.start === "followed-by") {
     return lang === "sv" ? "Därefter" : "Followed by";
   }
-  return lang === "sv" ? "Starttid ej publicerad" : "Start time not published";
+  return lang === "sv" ? "Tid saknas" : "No start time";
 }
 
 export function entryLabel(entry: Player["entry"], lang: Lang) {

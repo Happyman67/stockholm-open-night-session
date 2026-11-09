@@ -48,6 +48,6 @@ export function useDocumentTitle(title: { sv: string; en: string }) {
   const swedish = title.sv;
   const english = title.en;
   useEffect(() => {
-    document.title = `${lang === "sv" ? swedish : english} · Stockholm Open-koncept`;
+    document.title = `${lang === "sv" ? swedish : english} · Stockholm Open`;
   }, [lang, swedish, english]);
 }
