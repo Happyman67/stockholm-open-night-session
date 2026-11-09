@@ -176,33 +176,34 @@ function drawBeams(ctx: CanvasRenderingContext2D, frame: Frame, time: number) {
   const { width, height, mobile } = frame;
   const beams = mobile
     ? [
-        { x: 0.24, color: "90, 170, 255", tilt: -0.05, phase: 0.2 },
-        { x: 0.7, color: "255, 170, 90", tilt: 0.06, phase: 1.4 },
+        { x: 0.22, rgb: "244, 246, 255", fixture: "#f7f8ff", glow: "rgba(255,255,255,0.85)", tilt: -0.04, phase: 0.2, travel: 0.55 },
+        { x: 0.5, rgb: "255, 132, 28", fixture: "#ffb15a", glow: "rgba(255,140,40,0.9)", tilt: 0.02, phase: 2.3, travel: 0.62 },
+        { x: 0.78, rgb: "186, 96, 255", fixture: "#e4c2ff", glow: "rgba(180,90,255,0.9)", tilt: 0.05, phase: 4.2, travel: 0.55 },
       ]
     : [
-        { x: 0.2, color: "80, 170, 255", tilt: -0.08, phase: 0.2 },
-        { x: 0.38, color: "170, 214, 255", tilt: -0.02, phase: 1.1 },
-        { x: 0.63, color: "255, 168, 84", tilt: 0.04, phase: 2.2 },
-        { x: 0.8, color: "70, 140, 255", tilt: 0.1, phase: 0.7 },
+        { x: 0.16, rgb: "244, 246, 255", fixture: "#f7f8ff", glow: "rgba(255,255,255,0.9)", tilt: -0.18, phase: 0.3, travel: 0.72 },
+        { x: 0.38, rgb: "255, 128, 24", fixture: "#ffb15a", glow: "rgba(255,140,40,0.9)", tilt: -0.02, phase: 2.6, travel: 0.8 },
+        { x: 0.62, rgb: "176, 84, 255", fixture: "#e4c2ff", glow: "rgba(176,90,255,0.9)", tilt: 0.04, phase: 4.5, travel: 0.76 },
+        { x: 0.84, rgb: "255, 248, 240", fixture: "#fffaf4", glow: "rgba(255,255,255,0.85)", tilt: 0.18, phase: 1.2, travel: 0.64 },
       ];
-  const length = height * (mobile ? 0.28 : 0.52);
-  const spread = mobile ? 36 : 110;
+  const length = height * (mobile ? 0.36 : 0.6);
+  const spread = mobile ? 46 : 100;
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
   for (const beam of beams) {
-    const sway = Math.sin(time * 0.00022 + beam.phase) * 0.03;
-    const amber = beam.color.startsWith("255");
+    const sweep = Math.sin(time / 1100 + beam.phase) * beam.travel;
+    const white = beam.rgb.startsWith("244") || beam.rgb.startsWith("255, 248");
     const layers = mobile ? 5 : 7;
     ctx.save();
     ctx.translate(width * beam.x, height * 0.05);
-    ctx.rotate(beam.tilt + sway);
+    ctx.rotate(beam.tilt + sweep);
     for (let layer = layers; layer >= 1; layer -= 1) {
       const t = layer / layers;
-      const strength = (amber ? 0.11 : 0.2) * t * t * (mobile ? 0.4 : 1);
+      const strength = (white ? 0.1 : 0.16) * t * t * (mobile ? 0.85 : 1);
       const paint = ctx.createLinearGradient(0, 0, 0, length);
-      paint.addColorStop(0, `rgba(${beam.color}, ${strength})`);
-      paint.addColorStop(0.35, `rgba(${beam.color}, ${strength * 0.28})`);
-      paint.addColorStop(1, `rgba(${beam.color}, 0)`);
+      paint.addColorStop(0, `rgba(${beam.rgb}, ${strength})`);
+      paint.addColorStop(0.32, `rgba(${beam.rgb}, ${strength * 0.32})`);
+      paint.addColorStop(1, `rgba(${beam.rgb}, 0)`);
       ctx.fillStyle = paint;
       ctx.beginPath();
       ctx.moveTo(0, 4);
@@ -212,8 +213,8 @@ function drawBeams(ctx: CanvasRenderingContext2D, frame: Frame, time: number) {
       ctx.fill();
     }
     ctx.restore();
-    ctx.fillStyle = amber ? "rgba(255, 214, 160, 0.95)" : "rgba(226, 246, 255, 0.95)";
-    ctx.shadowColor = amber ? "rgba(255, 170, 80, 0.8)" : "rgba(140, 200, 255, 0.85)";
+    ctx.fillStyle = beam.fixture;
+    ctx.shadowColor = beam.glow;
     ctx.shadowBlur = mobile ? 8 : 14;
     ctx.fillRect(width * beam.x - 9, height * 0.046, 18, 4);
   }
