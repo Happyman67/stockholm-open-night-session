@@ -1,9 +1,8 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import Link from "next/link";
-import { Component, useEffect, useState, type ReactNode } from "react";
-import { StaticCourt } from "@/components/static-court";
+import { useEffect, useState } from "react";
+import { CourtScene } from "@/components/court-scene";
 import { useI18n } from "@/lib/i18n";
 import {
   formatScore,
@@ -14,22 +13,6 @@ import {
   statusLabel,
 } from "@/lib/data/adapter";
 import type { Match } from "@/lib/data/types";
-
-const CourtScene = dynamic(
-  () => import("@/components/court-scene").then((mod) => mod.CourtScene),
-  { ssr: false },
-);
-
-class SceneBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
-  state = { failed: false };
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-  render() {
-    if (this.state.failed) return <StaticCourt />;
-    return this.props.children;
-  }
-}
 
 export function Hero() {
   const { lang } = useI18n();
@@ -63,13 +46,7 @@ export function Hero() {
   return (
     <section className="relative isolate min-h-[920px] overflow-hidden lg:h-[680px] lg:min-h-[680px]" aria-labelledby="hero-title">
       <div className="absolute inset-0">
-        {showScene ? (
-          <SceneBoundary>
-            <CourtScene lite={lite} playing={playing} />
-          </SceneBoundary>
-        ) : (
-          <StaticCourt />
-        )}
+        <CourtScene lite={lite} playing={showScene && playing} />
       </div>
       <div className="hero-scrim pointer-events-none absolute inset-0" />
       <p className="sr-only">

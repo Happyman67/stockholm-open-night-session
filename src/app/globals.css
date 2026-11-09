@@ -189,17 +189,6 @@ option {
   border: 1px solid rgba(142, 235, 255, 0.4);
 }
 
-@keyframes beam-sway {
-  0%,
-  100% { transform: rotate(var(--beam-rot, -12deg)) translateX(0); }
-  50% { transform: rotate(calc(var(--beam-rot, -12deg) + 6deg)) translateX(24px); }
-}
-
-.light-beam {
-  animation: beam-sway 16s ease-in-out infinite;
-  transform-origin: top center;
-}
-
 .panel {
   background: rgba(16, 20, 28, 0.92);
   border: 1px solid rgba(244, 239, 230, 0.12);
@@ -207,13 +196,13 @@ option {
 
 .hero-scrim {
   background:
-    linear-gradient(90deg, rgba(5, 7, 12, 0.78) 0%, rgba(5, 7, 12, 0.38) 36%, rgba(5, 7, 12, 0.08) 62%, rgba(5, 7, 12, 0.28) 100%),
-    linear-gradient(180deg, rgba(5, 7, 12, 0.42) 0%, rgba(5, 7, 12, 0.02) 24%, rgba(5, 7, 12, 0.2) 68%, rgba(5, 7, 12, 0.78) 100%);
+    linear-gradient(90deg, rgba(4, 6, 11, 0.62) 0%, rgba(4, 6, 11, 0.18) 34%, rgba(4, 6, 11, 0.02) 58%, rgba(4, 6, 11, 0.32) 100%),
+    linear-gradient(180deg, rgba(4, 6, 11, 0.28) 0%, rgba(4, 6, 11, 0) 22%, rgba(4, 6, 11, 0.35) 100%);
 }
 
 @media (max-width: 1023px) {
   .hero-scrim {
-    background: linear-gradient(180deg, rgba(5, 7, 12, 0.28) 0%, rgba(5, 7, 12, 0.08) 28%, rgba(5, 7, 12, 0.72) 62%, #05070c 100%);
+    background: linear-gradient(180deg, rgba(4, 6, 11, 0.2) 0%, rgba(4, 6, 11, 0.18) 30%, rgba(4, 6, 11, 0.62) 78%, #04060b 100%);
   }
 }
 
